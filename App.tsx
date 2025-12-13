@@ -121,7 +121,8 @@ const App: React.FC = () => {
 
   // --- BACKGROUND SCENE LOGIC ---
   const getBackgroundImage = () => {
-    if (pet.stage === PetStage.EGG) return '/scene_living.png'; // Default
+    // EGG stage always uses default living room background
+    if (pet.stage === PetStage.EGG) return '/scene_living.png';
 
     // KITCHEN: Eating or Menu
     if (showFoodMenu || pet.actionState === ActionState.EATING) {
@@ -267,10 +268,10 @@ const App: React.FC = () => {
         </button>
       </div>
 
-      <div className="flex flex-col items-center gap-4">
+      <div className="flex flex-col items-center gap-4 relative z-50">
         
         {/* POMODORO TIMER */}
-        <div className="bg-white/80 backdrop-blur-md px-6 py-2 rounded-full border-2 border-[#957DAD] shadow-sm flex items-center gap-4">
+        <div className="bg-white/80 backdrop-blur-md px-6 py-2 rounded-full border-2 border-[#957DAD] shadow-sm flex items-center gap-4 relative z-50">
           <span className="font-mono text-[#555] font-bold">FOCUS</span>
           <span className="font-mono text-xl font-bold text-[#2d2d2d] w-20 text-center">{formatTime(pomoTime)}</span>
           <button onClick={togglePomo} className="text-xs bg-green-200 hover:bg-green-300 px-2 py-1 rounded text-green-800 font-bold">
@@ -280,7 +281,7 @@ const App: React.FC = () => {
         </div>
 
         {/* --- DEVICE CONTAINER --- */}
-        <div className="relative w-[440px] h-[540px] shrink-0">
+        <div className="relative w-[520px] h-[640px] shrink-0 z-50" style={{ position: 'relative', zIndex: 50 }}>
           
           {/* 1. OUTER SHELL */}
           <div className="absolute inset-0 bg-[#E0BBE4] rounded-[55%_55%_50%_50%] shadow-[0px_25px_50px_rgba(0,0,0,0.4),inset_-5px_-5px_20px_rgba(0,0,0,0.1),inset_5px_5px_20px_rgba(255,255,255,0.8)] border-4 border-white/60"></div>
@@ -298,19 +299,22 @@ const App: React.FC = () => {
           </div>
 
           {/* 3. SCREEN BEZEL & CONTENT */}
-          <div className="absolute inset-0 flex flex-col items-center pt-24 pb-8">
+          <div className="absolute inset-0 flex flex-col items-center pt-28 pb-8">
             
             <div className="text-white/90 font-bold text-sm tracking-[0.2em] mb-3 drop-shadow-md z-10 font-sans">
               TAMAGOTCHI
             </div>
 
             {/* Screen Glass Effect */}
-            <div className="relative w-[300px] h-[300px] bg-white rounded-[32px] p-[6px] shadow-[0_0_0_8px_rgba(255,255,255,0.6),0_10px_20px_rgba(0,0,0,0.2)] z-20">
+            <div className="relative w-[360px] h-[360px] bg-white rounded-[32px] p-[6px] shadow-[0_0_0_8px_rgba(255,255,255,0.6),0_10px_20px_rgba(0,0,0,0.2)] z-20">
               {/* The Actual Screen */}
               <div 
                 className="w-full h-full border-2 border-gray-200 rounded-[26px] relative overflow-hidden flex flex-col justify-between pixel-shadow isolate transition-all duration-500"
                 style={{
-                  background: `url(${bgImage}) center/cover no-repeat`,
+                  backgroundImage: `url(${bgImage})`,
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center',
+                  backgroundRepeat: 'no-repeat',
                   backgroundColor: '#fdf0ff' // Fallback
                 }}
               >
@@ -319,7 +323,7 @@ const App: React.FC = () => {
                 <div className="absolute inset-0 pointer-events-none opacity-5 mix-blend-multiply" 
                     style={{backgroundImage: 'linear-gradient(#000 1px, transparent 1px), linear-gradient(90deg, #000 1px, transparent 1px)', backgroundSize: '4px 4px', zIndex: -1}}>
                 </div>
-                <div className="absolute inset-0 pointer-events-none shadow-[inset_0_0_30px_rgba(0,0,0,0.05)] z-50 rounded-[26px]"></div>
+                <div className="absolute inset-0 pointer-events-none shadow-[inset_0_0_30px_rgba(0,0,0,0.05)] z-1 rounded-[26px]"></div>
 
                 {/* TOP BAR */}
                 <div className="relative z-10 w-full h-[48px] bg-white/60 backdrop-blur-sm border-b-2 border-black/5 flex items-center justify-between px-3 shrink-0">
@@ -376,16 +380,16 @@ const App: React.FC = () => {
 
                   {/* Game/Pet View */}
                   {(pet.stage === PetStage.EGG || pet.stage === PetStage.GHOST) ? (
-                      <div className="flex flex-col items-center w-full h-full justify-center pb-4">
+                      <div className="flex flex-col items-center w-full h-full justify-center pb-4 relative" style={{ zIndex: 20 }}>
                         <PetSprite stage={pet.stage} character={pet.character} actionState={pet.actionState} isSick={false} gameState={gameState} />
-                        <p className="absolute bottom-8 text-xs text-gray-500 font-bold animate-pulse">
+                        <p className="absolute bottom-8 text-xs text-gray-700 font-bold animate-pulse bg-white/80 px-2 py-1 rounded" style={{ zIndex: 30 }}>
                           {pet.stage === PetStage.EGG ? "PRESS B TO HATCH" : "GAME OVER (PRESS B)"}
                         </p>
                       </div>
                   ) : (
                       <>
                         {!gameState.active && (
-                          <div className="absolute bottom-4 left-4 flex gap-1">
+                          <div className="absolute bottom-4 left-4 flex gap-1 z-10">
                             {Array.from({length: pet.poopCount}).map((_, i) => (
                               <PoopSprite key={i} />
                             ))}
@@ -393,7 +397,7 @@ const App: React.FC = () => {
                         )}
 
                         {isStats && selectedIcon === 5 && !gameState.active ? (
-                          <div className="w-full h-full bg-[#fffcf0] absolute inset-0 z-20 flex flex-col p-6 text-sm text-gray-800 font-mono gap-4 overflow-y-auto">
+                          <div className="w-full h-full bg-[#fffcf0] absolute inset-0 z-20 flex flex-col p-6 text-sm text-gray-800 font-mono gap-4 overflow-hidden">
                             <div className="flex justify-between items-center border-b-2 border-gray-200 pb-2">
                               <span className="font-bold">AGE</span> 
                               <span>{Math.floor(pet.age)} YRS</span>
@@ -421,7 +425,7 @@ const App: React.FC = () => {
                             </div>
                           </div>
                         ) : (
-                          <div className="relative w-full h-full flex items-center justify-center">
+                          <div className="relative w-full h-full flex items-center justify-center" style={{ zIndex: 20, paddingTop: '75px' }}>
                             <PetSprite 
                               stage={pet.stage} 
                               character={pet.character} 
@@ -450,8 +454,8 @@ const App: React.FC = () => {
               </div>
             </div>
 
-            {/* BUTTONS - Moved down slightly */}
-            <div className="mt-auto mb-2 w-full flex justify-center gap-10 z-20 relative pt-4">
+            {/* BUTTONS - Fixed position */}
+            <div className="absolute bottom-4 w-full flex justify-center gap-10 z-20">
               <Button label="A" subLabel={gameState.active ? "LEFT" : "SELECT"} onClick={handleBtnA} color="bg-gradient-to-br from-pink-400 to-pink-600" />
               <Button label="B" subLabel={gameState.active ? "EXIT" : "OK"} onClick={handleBtnB} color="bg-gradient-to-br from-yellow-300 to-yellow-500" size="large" />
               <Button label="C" subLabel={gameState.active ? "RIGHT" : "CANCEL"} onClick={handleBtnC} color="bg-gradient-to-br from-pink-400 to-pink-600" />

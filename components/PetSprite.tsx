@@ -11,7 +11,7 @@ interface PetSpriteProps {
 }
 
 const PixelSvg: React.FC<{ children: React.ReactNode; className?: string }> = ({ children, className }) => (
-  <svg viewBox="0 0 32 32" className={`w-48 h-48 image-pixelated ${className}`} shapeRendering="crispEdges">
+  <svg viewBox="0 0 32 32" className={`w-48 h-48 image-pixelated ${className}`} style={{ zIndex: 10, position: 'relative' }} shapeRendering="crispEdges">
     {children}
   </svg>
 );
@@ -34,7 +34,7 @@ const SnakeGameView: React.FC<{ gameState: GameState }> = ({ gameState }) => (
 );
 
 const DodgeGameView: React.FC<{ gameState: GameState }> = ({ gameState }) => {
-  // 3 Lanes. Center X coords approx: 5, 16, 27
+  // 3 Lanes. Center X coords: 5, 16, 27
   const getLaneX = (lane: number) => {
       if (lane === 0) return 5;
       if (lane === 1) return 16;
@@ -47,7 +47,7 @@ const DodgeGameView: React.FC<{ gameState: GameState }> = ({ gameState }) => {
       <Rect x={10} y={0} w={0.5} h={32} fill="#ddd" />
       <Rect x={21} y={0} w={0.5} h={32} fill="#ddd" />
 
-      {/* Rocket */}
+      {/* Rocket - original size */}
       <text 
         x={getLaneX(gameState.rocketLane)} 
         y={28} 
@@ -56,7 +56,7 @@ const DodgeGameView: React.FC<{ gameState: GameState }> = ({ gameState }) => {
         className="animate-pulse"
       >🚀</text>
 
-      {/* Asteroids */}
+      {/* Asteroids - original size */}
       {gameState.asteroids.map((a, i) => {
          // Map logic Y (0-20) to SVG Y (0-30 approx)
          // Logic Y max 20, SVG max 32. 
@@ -70,6 +70,62 @@ const DodgeGameView: React.FC<{ gameState: GameState }> = ({ gameState }) => {
 };
 
 const GameOverlay: React.FC<{ gameState: GameState }> = ({ gameState }) => {
+  // For DODGE game, use larger viewBox to fill the screen
+  if (gameState.gameType === GameType.DODGE) {
+    return (
+      <svg viewBox="0 0 32 32" className="w-[140%] h-[140%] image-pixelated" style={{ zIndex: 10, position: 'relative', margin: '-20% -20% -20% -20%', marginTop: '-25%' }} shapeRendering="crispEdges">
+        {/* Background Grid - larger white canvas, centered and shifted up */}
+        <rect x="-4" y="-4" width="40" height="40" fill="#f8fafc" />
+        <g opacity="0.1">
+          {Array.from({length: 16}).map((_, i) => (
+            <React.Fragment key={i}>
+              <Rect x={0} y={i * 2} w={32} h={0.1} fill="#000" />
+              <Rect x={i * 2} y={0} w={0.1} h={32} fill="#000" />
+            </React.Fragment>
+          ))}
+        </g>
+
+        <DodgeGameView gameState={gameState} />
+
+        {gameState.gameOver && (
+          <g>
+            <rect x="4" y="10" width="24" height="12" fill="white" stroke="black" strokeWidth="1" />
+            <text x="16" y="16" textAnchor="middle" fontSize="4" fontFamily="monospace" fill="black" fontWeight="bold">GAME OVER</text>
+            <text x="16" y="20" textAnchor="middle" fontSize="3" fontFamily="monospace" fill="#555">SCORE: {gameState.score}</text>
+          </g>
+        )}
+      </svg>
+    );
+  }
+  
+  // For SNAKE game, use larger viewBox to fill the screen
+  if (gameState.gameType === GameType.SNAKE) {
+    return (
+      <svg viewBox="0 0 32 32" className="w-[140%] h-[140%] image-pixelated" style={{ zIndex: 10, position: 'relative', margin: '-20% -20% -20% -20%', marginTop: '-25%' }} shapeRendering="crispEdges">
+        {/* Background Grid - larger white canvas, centered and shifted up */}
+        <rect x="-4" y="-4" width="40" height="40" fill="#f8fafc" />
+        <g opacity="0.1">
+          {Array.from({length: 16}).map((_, i) => (
+            <React.Fragment key={i}>
+              <Rect x={0} y={i * 2} w={32} h={0.1} fill="#000" />
+              <Rect x={i * 2} y={0} w={0.1} h={32} fill="#000" />
+            </React.Fragment>
+          ))}
+        </g>
+
+        <SnakeGameView gameState={gameState} />
+
+        {gameState.gameOver && (
+          <g>
+            <rect x="4" y="10" width="24" height="12" fill="white" stroke="black" strokeWidth="1" />
+            <text x="16" y="16" textAnchor="middle" fontSize="4" fontFamily="monospace" fill="black" fontWeight="bold">GAME OVER</text>
+            <text x="16" y="20" textAnchor="middle" fontSize="3" fontFamily="monospace" fill="#555">SCORE: {gameState.score}</text>
+          </g>
+        )}
+      </svg>
+    );
+  }
+  
   return (
     <PixelSvg>
        {/* Background Grid */}
@@ -106,21 +162,23 @@ export const PetSprite: React.FC<PetSpriteProps> = ({ stage, character, actionSt
   // EGG STAGE - Moved down
   if (stage === PetStage.EGG) {
     return (
-      <PixelSvg className={`${className} animate-bounce`}>
-        <g fill="#000" transform="translate(0, 4)">
-          <Rect x={12} y={10} w={8} h={1} />
-          <Rect x={10} y={11} w={2} h={1} />
-          <Rect x={20} y={11} w={2} h={1} />
-          <Rect x={9} y={12} w={1} h={8} />
-          <Rect x={22} y={12} w={1} h={8} />
-          <Rect x={10} y={20} w={2} h={1} />
-          <Rect x={20} y={20} w={2} h={1} />
-          <Rect x={12} y={21} w={8} h={1} />
-          {/* Decor */}
-          <Rect x={14} y={14} w={1} h={1} />
-          <Rect x={17} y={16} w={1} h={1} />
-        </g>
-      </PixelSvg>
+      <div className="relative" style={{ zIndex: 20 }}>
+        <PixelSvg className={`${className} animate-bounce`} style={{ filter: 'drop-shadow(2px 2px 4px rgba(0,0,0,0.3))' }}>
+          <g fill="#2d2d2d" transform="translate(0, 4)">
+            <Rect x={12} y={10} w={8} h={1} />
+            <Rect x={10} y={11} w={2} h={1} />
+            <Rect x={20} y={11} w={2} h={1} />
+            <Rect x={9} y={12} w={1} h={8} />
+            <Rect x={22} y={12} w={1} h={8} />
+            <Rect x={10} y={20} w={2} h={1} />
+            <Rect x={20} y={20} w={2} h={1} />
+            <Rect x={12} y={21} w={8} h={1} />
+            {/* Decor */}
+            <Rect x={14} y={14} w={1} h={1} />
+            <Rect x={17} y={16} w={1} h={1} />
+          </g>
+        </PixelSvg>
+      </div>
     );
   }
 

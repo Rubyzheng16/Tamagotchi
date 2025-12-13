@@ -185,17 +185,33 @@ export const useTamagotchi = () => {
             });
 
             // 4. Spawn new asteroids
-            // Difficulty increases spawn rate
+            // Difficulty increases spawn rate (reduced density)
             const level = Math.floor(prev.score / 5);
-            // Base chance 0.15, +0.02 per level, max 0.4
-            const spawnChance = Math.min(0.4, 0.15 + (level * 0.02));
+            // Base chance 0.08, +0.01 per level, max 0.25 (much lower than before)
+            const spawnChance = Math.min(0.25, 0.08 + (level * 0.01));
 
             // Ensure we don't spawn if there's already an asteroid at y=0 (prevent horizontal walls instantly)
             const topRowClear = !remainingAsteroids.some(a => a.y === 0);
             
-            if (topRowClear && Math.random() < spawnChance) {
-                const lane = Math.floor(Math.random() * 3); // 0, 1, 2
-                remainingAsteroids.push({ lane, y: 0 });
+            // Check which lanes already have asteroids (check entire lane, not just top)
+            // Prevent spawning in lanes that already have an asteroid
+            const occupiedLanes = new Set<number>();
+            remainingAsteroids.forEach(a => {
+                // Check if there's already an asteroid in this lane (anywhere in the lane)
+                occupiedLanes.add(a.lane);
+            });
+            
+            // Only spawn if top row is clear AND not all lanes are occupied AND the selected lane doesn't have an asteroid
+            if (topRowClear && occupiedLanes.size < 3 && Math.random() < spawnChance) {
+                // Find available lanes (lanes without any asteroids)
+                const availableLanes = [0, 1, 2].filter(lane => !occupiedLanes.has(lane));
+                
+                if (availableLanes.length > 0) {
+                    // Randomly select from available lanes
+                    const randomIndex = Math.floor(Math.random() * availableLanes.length);
+                    const lane = availableLanes[randomIndex];
+                    remainingAsteroids.push({ lane, y: 0 });
+                }
             }
 
             return { 

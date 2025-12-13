@@ -48,17 +48,34 @@ export enum GameAction {
   CHAT = 'CHAT'
 }
 
-// Snake Game Types
+export enum GameType {
+  SNAKE = 'SNAKE',
+  DODGE = 'DODGE'
+}
+
+// Point type
 export interface Point {
   x: number;
   y: number;
 }
 
+export interface Asteroid {
+  lane: number; // 0, 1, 2
+  y: number;
+}
+
 export interface GameState {
   active: boolean;
-  snake: Point[];
-  food: Point;
-  direction: Point; // {x: 1, y: 0} etc
+  gameType: GameType;
   score: number;
   gameOver: boolean;
+  
+  // Snake State
+  snake: Point[];
+  food: Point;
+  direction: Point; 
+
+  // Dodge State
+  rocketLane: number; // 0, 1, 2
+  asteroids: Asteroid[];
 }

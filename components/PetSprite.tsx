@@ -1,5 +1,5 @@
 import React from 'react';
-import { PetStage, PetCharacter, ActionState, GameState } from '../types';
+import { PetStage, PetCharacter, ActionState, GameState, GameType } from '../types';
 
 interface PetSpriteProps {
   stage: PetStage;
@@ -20,51 +20,94 @@ const Rect: React.FC<{ x: number; y: number; w?: number; h?: number; fill?: stri
   <rect x={x} y={y} width={w} height={h} fill={fill} className={className} />
 );
 
-// --- Snake Game Renderer ---
-const SnakeGameView: React.FC<{ gameState: GameState }> = ({ gameState }) => {
+// --- Game Renderers ---
+
+const SnakeGameView: React.FC<{ gameState: GameState }> = ({ gameState }) => (
+  <g>
+    {/* Snake Body */}
+    {gameState.snake.map((p, i) => (
+      <Rect key={i} x={p.x * 2} y={p.y * 2} w={2} h={2} fill="#2d2d2d" />
+    ))}
+    {/* Food */}
+    <Rect x={gameState.food.x * 2} y={gameState.food.y * 2} w={2} h={2} fill="#ff0000" />
+  </g>
+);
+
+const DodgeGameView: React.FC<{ gameState: GameState }> = ({ gameState }) => {
+  // 3 Lanes. Center X coords approx: 5, 16, 27
+  const getLaneX = (lane: number) => {
+      if (lane === 0) return 5;
+      if (lane === 1) return 16;
+      return 27;
+  };
+
+  return (
+    <g>
+      {/* Lane Markers */}
+      <Rect x={10} y={0} w={0.5} h={32} fill="#ddd" />
+      <Rect x={21} y={0} w={0.5} h={32} fill="#ddd" />
+
+      {/* Rocket */}
+      <text 
+        x={getLaneX(gameState.rocketLane)} 
+        y={28} 
+        textAnchor="middle" 
+        fontSize="6" 
+        className="animate-pulse"
+      >🚀</text>
+
+      {/* Asteroids */}
+      {gameState.asteroids.map((a, i) => {
+         // Map logic Y (0-20) to SVG Y (0-30 approx)
+         // Logic Y max 20, SVG max 32. 
+         const renderY = (a.y / 20) * 32; 
+         return (
+            <text key={i} x={getLaneX(a.lane)} y={renderY} textAnchor="middle" fontSize="6">🪨</text>
+         );
+      })}
+    </g>
+  );
+};
+
+const GameOverlay: React.FC<{ gameState: GameState }> = ({ gameState }) => {
   return (
     <PixelSvg>
-      {/* Background Grid Accent - adjusted for scaling */}
-      <rect x="0" y="0" width="32" height="32" fill="#f0fdf4" />
-      <g opacity="0.1">
-         {/* Draw grid lines every 2 pixels to represent the 16x16 grid */}
+       {/* Background Grid */}
+       <rect x="0" y="0" width="32" height="32" fill="#f8fafc" />
+       <g opacity="0.1">
          {Array.from({length: 16}).map((_, i) => (
            <React.Fragment key={i}>
              <Rect x={0} y={i * 2} w={32} h={0.1} fill="#000" />
              <Rect x={i * 2} y={0} w={0.1} h={32} fill="#000" />
            </React.Fragment>
          ))}
-      </g>
-      
-      {/* Snake Body - Scaled by 2 for 16x16 grid on 32x32 canvas */}
-      {gameState.snake.map((p, i) => (
-        <Rect key={i} x={p.x * 2} y={p.y * 2} w={2} h={2} fill="#2d2d2d" />
-      ))}
-      
-      {/* Food (Apple) - Scaled by 2 */}
-      <Rect x={gameState.food.x * 2} y={gameState.food.y * 2} w={2} h={2} fill="#ff0000" />
-      
-      {gameState.gameOver && (
+       </g>
+
+       {gameState.gameType === GameType.SNAKE && <SnakeGameView gameState={gameState} />}
+       {gameState.gameType === GameType.DODGE && <DodgeGameView gameState={gameState} />}
+
+       {gameState.gameOver && (
         <g>
-           <rect x="4" y="12" width="24" height="8" fill="white" stroke="black" strokeWidth="1" />
-           <text x="16" y="18" textAnchor="middle" fontSize="5" fontFamily="monospace" fill="black">GAME OVER</text>
+           <rect x="4" y="10" width="24" height="12" fill="white" stroke="black" strokeWidth="1" />
+           <text x="16" y="16" textAnchor="middle" fontSize="4" fontFamily="monospace" fill="black" fontWeight="bold">GAME OVER</text>
+           <text x="16" y="20" textAnchor="middle" fontSize="3" fontFamily="monospace" fill="#555">SCORE: {gameState.score}</text>
         </g>
       )}
     </PixelSvg>
   );
-}
+};
 
 export const PetSprite: React.FC<PetSpriteProps> = ({ stage, character, actionState, isSick, gameState, className = '' }) => {
   
   if (actionState === ActionState.PLAYING_GAME && gameState.active) {
-    return <SnakeGameView gameState={gameState} />;
+    return <GameOverlay gameState={gameState} />;
   }
 
-  // EGG STAGE
+  // EGG STAGE - Moved down
   if (stage === PetStage.EGG) {
     return (
       <PixelSvg className={`${className} animate-bounce`}>
-        <g fill="#000">
+        <g fill="#000" transform="translate(0, 4)">
           <Rect x={12} y={10} w={8} h={1} />
           <Rect x={10} y={11} w={2} h={1} />
           <Rect x={20} y={11} w={2} h={1} />

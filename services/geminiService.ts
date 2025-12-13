@@ -9,10 +9,10 @@ const getClient = () => {
 
 export const generatePetThought = async (pet: PetState): Promise<string> => {
   const ai = getClient();
-  if (!ai) return "需要 API Key...";
+  if (!ai) return "No API Key...";
 
   const prompt = `
-    Roleplay as a virtual pet Cat (Tamagotchi style) in CHINESE (Simplified).
+    Roleplay as a virtual pet Cat (Tamagotchi style) in ENGLISH.
     
     Current State:
     - Stage: ${pet.stage}
@@ -23,8 +23,8 @@ export const generatePetThought = async (pet: PetState): Promise<string> => {
     - Is Sick: ${pet.isSick}
     - Poop on floor: ${pet.poopCount}
     
-    Instruction: Generate a very short, cute, pixel-game style thought bubble (max 15 Chinese characters).
-    Use "喵" (Meow) occasionally.
+    Instruction: Generate a very short, cute, pixel-game style thought bubble (max 10 words).
+    Use "Meow" occasionally.
     If sick, complain gently. If hungry, ask for fish. If happy, purr.
     Do not use quotes.
   `;
@@ -37,6 +37,6 @@ export const generatePetThought = async (pet: PetState): Promise<string> => {
     return response.text.trim();
   } catch (error) {
     console.error("Gemini Error", error);
-    return "喵...";
+    return "Meow...";
   }
 };

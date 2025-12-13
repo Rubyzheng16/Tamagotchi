@@ -120,8 +120,13 @@ export const useTamagotchi = () => {
   useEffect(() => {
     if (!gameState.active || gameState.gameOver) return;
 
+    // Calculate Dynamic Difficulty for Dodge
     let loopSpeed = 200;
-    if (gameState.gameType === GameType.DODGE) loopSpeed = 150; // Faster for Dodge
+    if (gameState.gameType === GameType.DODGE) {
+        // Start at 200ms, decrease by 10ms every 5 points, cap at 80ms
+        const level = Math.floor(gameState.score / 5);
+        loopSpeed = Math.max(80, 200 - (level * 15)); 
+    }
 
     const gameInterval = setInterval(() => {
       setGameState(prev => {
@@ -155,8 +160,7 @@ export const useTamagotchi = () => {
             const movedAsteroids = prev.asteroids.map(a => ({ ...a, y: a.y + 1 }));
             
             // 2. Check collision
-            // Rocket is at the bottom (say Y index 28-30 in a 32 grid, logically we map lanes to X)
-            // Let's say logic grid is height 20. Rocket is at Y=18.
+            // Rocket is at the bottom (say Y index 18 in a 20 grid)
             const ROCKET_Y = 18;
             
             let collision = false;
@@ -181,8 +185,15 @@ export const useTamagotchi = () => {
             });
 
             // 4. Spawn new asteroids
-            // Logic: drastically reduced to 8% chance per tick (was 25%)
-            if (Math.random() < 0.08) {
+            // Difficulty increases spawn rate
+            const level = Math.floor(prev.score / 5);
+            // Base chance 0.15, +0.02 per level, max 0.4
+            const spawnChance = Math.min(0.4, 0.15 + (level * 0.02));
+
+            // Ensure we don't spawn if there's already an asteroid at y=0 (prevent horizontal walls instantly)
+            const topRowClear = !remainingAsteroids.some(a => a.y === 0);
+            
+            if (topRowClear && Math.random() < spawnChance) {
                 const lane = Math.floor(Math.random() * 3); // 0, 1, 2
                 remainingAsteroids.push({ lane, y: 0 });
             }
@@ -199,7 +210,7 @@ export const useTamagotchi = () => {
     }, loopSpeed);
 
     return () => clearInterval(gameInterval);
-  }, [gameState.active, gameState.gameOver, gameState.gameType]);
+  }, [gameState.active, gameState.gameOver, gameState.gameType, gameState.score]); // Added score dependency to update speed
 
 
   const hatch = useCallback(() => {

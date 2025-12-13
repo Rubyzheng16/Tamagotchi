@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useTamagotchi } from './hooks/useTamagotchi';
 import { PetSprite, PoopSprite } from './components/PetSprite';
-import { PetStage, GameAction, GameType } from './types';
+import { PetStage, GameAction, GameType, ActionState } from './types';
 import { generatePetThought } from './services/geminiService';
 
 // --- SOUND SYSTEM ---
@@ -118,6 +118,27 @@ const App: React.FC = () => {
   ];
 
   const [selectedFoodIndex, setSelectedFoodIndex] = useState(0);
+
+  // --- BACKGROUND SCENE LOGIC ---
+  const getBackgroundImage = () => {
+    if (pet.stage === PetStage.EGG) return '/scene_living.png'; // Default
+
+    // KITCHEN: Eating or Menu
+    if (showFoodMenu || pet.actionState === ActionState.EATING) {
+      return '/scene_kitchen.png';
+    }
+
+    // BATHROOM: Bathing, Stats, or selected icons for Bath/Stats
+    const currentAction = icons[selectedIcon]?.id;
+    if (pet.actionState === ActionState.BATHING || currentAction === GameAction.BATH || currentAction === GameAction.STATS) {
+      return '/scene_bathroom.png';
+    }
+
+    // LIVING ROOM: Default for Play, Chat, Sleep, Medicine
+    return '/scene_living.png';
+  };
+
+  const bgImage = getBackgroundImage();
 
   // --- HANDLERS ---
 
@@ -286,16 +307,22 @@ const App: React.FC = () => {
             {/* Screen Glass Effect */}
             <div className="relative w-[300px] h-[300px] bg-white rounded-[32px] p-[6px] shadow-[0_0_0_8px_rgba(255,255,255,0.6),0_10px_20px_rgba(0,0,0,0.2)] z-20">
               {/* The Actual Screen */}
-              <div className="w-full h-full bg-[#fdf0ff] border-2 border-gray-200 rounded-[26px] relative overflow-hidden flex flex-col justify-between pixel-shadow isolate">
+              <div 
+                className="w-full h-full border-2 border-gray-200 rounded-[26px] relative overflow-hidden flex flex-col justify-between pixel-shadow isolate transition-all duration-500"
+                style={{
+                  background: `url(${bgImage}) center/cover no-repeat`,
+                  backgroundColor: '#fdf0ff' // Fallback
+                }}
+              >
                 
-                {/* Grid */}
-                <div className="absolute inset-0 pointer-events-none opacity-10 mix-blend-multiply" 
+                {/* Grid Overlay (Optional: reduced opacity so image is visible) */}
+                <div className="absolute inset-0 pointer-events-none opacity-5 mix-blend-multiply" 
                     style={{backgroundImage: 'linear-gradient(#000 1px, transparent 1px), linear-gradient(90deg, #000 1px, transparent 1px)', backgroundSize: '4px 4px', zIndex: -1}}>
                 </div>
                 <div className="absolute inset-0 pointer-events-none shadow-[inset_0_0_30px_rgba(0,0,0,0.05)] z-50 rounded-[26px]"></div>
 
                 {/* TOP BAR */}
-                <div className="relative z-10 w-full h-[48px] bg-sky-200 border-b-2 border-black/10 flex items-center justify-between px-3 shrink-0">
+                <div className="relative z-10 w-full h-[48px] bg-white/60 backdrop-blur-sm border-b-2 border-black/5 flex items-center justify-between px-3 shrink-0">
                   {icons.slice(0, 4).map((icon, idx) => (
                     <IconItem 
                         key={icon.id} 
@@ -409,7 +436,7 @@ const App: React.FC = () => {
                 </div>
 
                 {/* BOTTOM BAR */}
-                <div className="relative z-10 w-full h-[48px] bg-sky-200 border-t-2 border-black/10 flex items-center justify-between px-5 shrink-0">
+                <div className="relative z-10 w-full h-[48px] bg-white/60 backdrop-blur-sm border-t-2 border-black/5 flex items-center justify-between px-5 shrink-0">
                   {icons.slice(4).map((icon, idx) => (
                     <IconItem 
                         key={icon.id} 

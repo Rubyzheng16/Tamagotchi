@@ -22,16 +22,21 @@ const Rect: React.FC<{ x: number; y: number; w?: number; h?: number; fill?: stri
 
 // --- Game Renderers ---
 
-const SnakeGameView: React.FC<{ gameState: GameState }> = ({ gameState }) => (
-  <g>
-    {/* Snake Body */}
-    {gameState.snake.map((p, i) => (
-      <Rect key={i} x={p.x * 2} y={p.y * 2} w={2} h={2} fill="#2d2d2d" />
-    ))}
-    {/* Food */}
-    <Rect x={gameState.food.x * 2} y={gameState.food.y * 2} w={2} h={2} fill="#ff0000" />
-  </g>
-);
+const SnakeGameView: React.FC<{ gameState: GameState }> = ({ gameState }) => {
+  const GRID_SIZE = 16;
+  return (
+    <g>
+      {/* Game boundary - visible border to show play area */}
+      <rect x="0" y="0" width={GRID_SIZE * 2} height={GRID_SIZE * 2} fill="none" stroke="#999" strokeWidth="0.3" />
+      {/* Snake Body */}
+      {gameState.snake.map((p, i) => (
+        <Rect key={i} x={p.x * 2} y={p.y * 2} w={2} h={2} fill="#2d2d2d" />
+      ))}
+      {/* Food */}
+      <Rect x={gameState.food.x * 2} y={gameState.food.y * 2} w={2} h={2} fill="#ff0000" />
+    </g>
+  );
+};
 
 const DodgeGameView: React.FC<{ gameState: GameState }> = ({ gameState }) => {
   // 3 Lanes. Center X coords: 5, 16, 27
@@ -73,7 +78,7 @@ const GameOverlay: React.FC<{ gameState: GameState }> = ({ gameState }) => {
   // For DODGE game, use larger viewBox to fill the screen
   if (gameState.gameType === GameType.DODGE) {
     return (
-      <svg viewBox="0 0 32 32" className="w-[140%] h-[140%] image-pixelated" style={{ zIndex: 10, position: 'relative', margin: '-20% -20% -20% -20%', marginTop: '-25%' }} shapeRendering="crispEdges">
+      <svg viewBox="0 0 32 32" className="w-[140%] h-[140%] image-pixelated" style={{ zIndex: 10, position: 'relative', margin: '-20% -20% -20% -20%', marginTop: '-35%' }} shapeRendering="crispEdges">
         {/* Background Grid - larger white canvas, centered and shifted up */}
         <rect x="-4" y="-4" width="40" height="40" fill="#f8fafc" />
         <g opacity="0.1">
@@ -101,9 +106,11 @@ const GameOverlay: React.FC<{ gameState: GameState }> = ({ gameState }) => {
   // For SNAKE game, use larger viewBox to fill the screen
   if (gameState.gameType === GameType.SNAKE) {
     return (
-      <svg viewBox="0 0 32 32" className="w-[140%] h-[140%] image-pixelated" style={{ zIndex: 10, position: 'relative', margin: '-20% -20% -20% -20%', marginTop: '-25%' }} shapeRendering="crispEdges">
-        {/* Background Grid - larger white canvas, centered and shifted up */}
+      <svg viewBox="0 0 32 32" className="w-[140%] h-[140%] image-pixelated" style={{ zIndex: 10, position: 'relative', margin: '-20% -20% -20% -20%', marginTop: '-35%' }} shapeRendering="crispEdges">
+        {/* Background Grid - larger white canvas, centered and shifted up more */}
         <rect x="-4" y="-4" width="40" height="40" fill="#f8fafc" />
+        {/* Visible border for game area (0-32 corresponds to GRID_SIZE 16 * 2) */}
+        <rect x="0" y="0" width="32" height="32" fill="none" stroke="#ddd" strokeWidth="0.5" />
         <g opacity="0.1">
           {Array.from({length: 16}).map((_, i) => (
             <React.Fragment key={i}>

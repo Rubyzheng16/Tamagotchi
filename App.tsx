@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useTamagotchi } from './hooks/useTamagotchi';
 import { PetSprite, PoopSprite } from './components/PetSprite';
 import { PetStage, GameAction, GameType, ActionState } from './types';
-import { generatePetThought } from './services/chatService';
+import { generatePetThought } from '@/services/chatService';
 
 // --- SOUND SYSTEM ---
 const playSound = (type: 'select' | 'confirm' | 'cancel') => {

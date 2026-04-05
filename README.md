@@ -5,18 +5,10 @@
 
 一个基于Y2K美学风格的复古虚拟宠物游戏，完美复刻90年代电子宠物体验，融合现代Web技术实现沉浸式交互。
 
-## 🎯 项目概述
-
-### 角色设定
-- **资深前端工程师**：精通 React、TypeScript、Tailwind CSS、SVG 像素艺术设计
-- **设计理念**：复古与创新的完美融合，Y2K美学与现代技术的结合
-
 ### 核心视觉设计
 <div align="center">
 <img src="https://via.placeholder.com/800x400/957DAD/FFFFFF?text=Y2K+Color+Palette+色卡" alt="Y2K色卡" width="600" />
 </div>
-
-**重要提示**：在描述颜色时，务必提供色卡图片或具体的颜色代码，以确保颜色还原准确。
 
 #### 外壳设计
 - **形状**：卵形/椭圆形游戏机外壳

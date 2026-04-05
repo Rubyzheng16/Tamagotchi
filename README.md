@@ -1,5 +1,4 @@
 <div align="center">
-<img width="1200" height="475" alt="Y2K Virtual Pet Banner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
 </div>
 
 # 🚀 拓麻歌子 (Tamagotchi) 虚拟宠物网页应用
